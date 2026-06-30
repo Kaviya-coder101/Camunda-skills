@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_SimpleProcess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_SimpleProcess" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
   <bpmn:process id="SimpleProcess" name="Simple Process" isExecutable="true">
     <bpmn:startEvent id="StartEvent" name="Start">
-      <bpmn:outgoing>Flow_StartToEnd</bpmn:outgoing>
+      <bpmn:outgoing>Flow_StartToRest</bpmn:outgoing>
     </bpmn:startEvent>
+    <bpmn:serviceTask id="CallRestApi" name="Call REST API" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="13">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="noAuth" target="authentication.type" />
+          <zeebe:input source="GET" target="method" />
+          <zeebe:input source="TODO_REPLACE_WITH_API_URL" target="url" />
+          <zeebe:input source="20" target="connectionTimeoutInSeconds" />
+          <zeebe:input source="20" target="readTimeoutInSeconds" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="resultVariable" value="apiResponse" />
+          <zeebe:header key="resultExpression" value="={body: response.body, status: response.statusCode}" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_StartToRest</bpmn:incoming>
+      <bpmn:outgoing>Flow_RestToEnd</bpmn:outgoing>
+    </bpmn:serviceTask>
     <bpmn:endEvent id="EndEvent" name="End">
-      <bpmn:incoming>Flow_StartToEnd</bpmn:incoming>
+      <bpmn:incoming>Flow_RestToEnd</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_StartToEnd" sourceRef="StartEvent" targetRef="EndEvent" />
+    <bpmn:sequenceFlow id="Flow_StartToRest" sourceRef="StartEvent" targetRef="CallRestApi" />
+    <bpmn:sequenceFlow id="Flow_RestToEnd" sourceRef="CallRestApi" targetRef="EndEvent" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_SimpleProcess">
     <bpmndi:BPMNPlane id="BPMNPlane_SimpleProcess" bpmnElement="SimpleProcess">
@@ -17,15 +36,22 @@
           <dc:Bounds x="178" y="145" width="24" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallRestApi_di" bpmnElement="CallRestApi">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_di" bpmnElement="EndEvent">
-        <dc:Bounds x="272" y="102" width="36" height="36" />
+        <dc:Bounds x="412" y="102" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="281" y="145" width="20" height="14" />
+          <dc:Bounds x="421" y="145" width="20" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_StartToEnd_di" bpmnElement="Flow_StartToEnd">
+      <bpmndi:BPMNEdge id="Flow_StartToRest_di" bpmnElement="Flow_StartToRest">
         <di:waypoint x="208" y="120" />
-        <di:waypoint x="272" y="120" />
+        <di:waypoint x="260" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RestToEnd_di" bpmnElement="Flow_RestToEnd">
+        <di:waypoint x="360" y="120" />
+        <di:waypoint x="412" y="120" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
