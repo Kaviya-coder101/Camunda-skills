@@ -1,0 +1,26 @@
+{
+  "components": [
+    {
+      "type": "textfield",
+      "id": "Field_Name",
+      "key": "name",
+      "label": "Name",
+      "layout": { "row": "row_0", "columns": null },
+      "validate": { "required": true }
+    },
+    {
+      "type": "number",
+      "id": "Field_Number",
+      "key": "number",
+      "label": "Number",
+      "layout": { "row": "row_1", "columns": null },
+      "validate": { "required": true }
+    }
+  ],
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.8.0",
+  "exporter": { "name": "Camunda Modeler", "version": "5.34.0" },
+  "schemaVersion": 18,
+  "id": "name-number-form",
+  "type": "default"
+}
